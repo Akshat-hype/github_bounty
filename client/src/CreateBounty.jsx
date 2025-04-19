@@ -36,7 +36,7 @@ function CreateBounty() {
 
     try {
       // Reference to user's document
-      const userDocRef = doc(db, 'users', user.uid);
+      const userDocRef = doc(db, 'users', user.displayName);
       // Create a subcollection "bounties" and add bounty
       await setDoc(doc(collection(userDocRef, 'bounties')), bountyData);
 
@@ -99,7 +99,7 @@ const styles = {
     padding: '2rem',
     maxWidth: '500px',
     margin: '0 auto',
-    backgroundColor: '#f9f9f9',
+    backgroundColor: 'black',
     borderRadius: '10px',
     boxShadow: '0px 4px 12px rgba(0,0,0,0.1)',
   },

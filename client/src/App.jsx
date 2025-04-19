@@ -1,13 +1,45 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { db } from './firebase';
+import { doc, getDoc } from 'firebase/firestore';
 import Dashboard from './pages/Dashboard';
 import CreateBounty from './CreateBounty';
 import Login from './pages/LoginPage'; // Assuming Login component exists
 
 function App() {
-  // Assuming you already have githubUsername and walletAddress from login
-  const githubUsername = "exampleUsername"; // replace with actual
-  const walletAddress = "0x123...abc";       // replace with actual
+  const [githubUsername, setGithubUsername] = useState(null);
+  const [walletAddress, setWalletAddress] = useState(null);
+  const [loading, setLoading] = useState(true);
 
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const userRef = doc(db, "users", "exampleUsername"); // Replace with the actual GitHub username
+        const userSnap = await getDoc(userRef);
+        
+        if (userSnap.exists()) {
+          const userData = userSnap.data();
+          setGithubUsername(user.displayName);
+          setWalletAddress(walletAddress);
+        } else {
+          console.log("No such user!");
+        }
+      } catch (error) {
+        console.error("Error fetching user data: ", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUserData();
+  }, []);
+
+  // Show loading state while data is being fetched
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  // If user data is fetched successfully, render the routes
   return (
     <Router>
       <Routes>
@@ -20,4 +52,4 @@ function App() {
   );
 }
 
-export default App;  // Ensure default export is here
+export default App; // Ensure default export is here

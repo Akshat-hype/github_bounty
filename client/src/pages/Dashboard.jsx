@@ -1,5 +1,6 @@
 // src/Dashboard.jsx
 import { useNavigate } from "react-router-dom";
+import BountyFetch from "../BountyFetch";
 
 function Dashboard({ githubUsername, walletAddress }) {
   const navigate = useNavigate();
@@ -18,6 +19,7 @@ function Dashboard({ githubUsername, walletAddress }) {
           🎯 Claim Bounty
         </button>
       </div>
+      <BountyFetch/>
     </div>
   );
 }
@@ -25,7 +27,8 @@ function Dashboard({ githubUsername, walletAddress }) {
 const styles = {
   container: {
     textAlign: 'center',
-    marginTop: '50px'
+    marginTop: '50px',
+    marginLeft: '330px'
   },
   buttonContainer: {
     marginTop: '30px',
