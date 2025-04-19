@@ -18,8 +18,12 @@ function Dashboard({ githubUsername, walletAddress }) {
         <button style={styles.button} onClick={() => navigate('/claim-bounty')}>
           🎯 Claim Bounty
         </button>
+        <button style={styles.button} onClick={() => navigate('/authorize')}>
+          🔐 Authorize Bounty
+        </button>
       </div>
-      <BountyFetch/>
+
+      <BountyFetch />
     </div>
   );
 }

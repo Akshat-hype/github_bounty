@@ -5,6 +5,8 @@ import { doc, getDoc } from 'firebase/firestore';
 import Dashboard from './pages/Dashboard';
 import CreateBounty from './CreateBounty';
 import Login from './pages/LoginPage'; // Assuming Login component exists
+import ClaimBounty from './ClaimBounty';
+import AuthorizeBounty from './AuthorizeBounty';
 
 function App() {
   const [githubUsername, setGithubUsername] = useState(null);
@@ -46,7 +48,8 @@ function App() {
         <Route path="/" element={<Login />} />
         <Route path="/dashboard" element={<Dashboard githubUsername={githubUsername} walletAddress={walletAddress} />} />
         <Route path="/create-bounty" element={<CreateBounty githubUsername={githubUsername} walletAddress={walletAddress} />} />
-        {/* <Route path="/claim-bounty" element={<h1>Claim Bounty Page</h1>} /> */}
+        <Route path="/claim-bounty" element={<ClaimBounty />} />
+        <Route path="/authorize" element={<AuthorizeBounty/>} />
       </Routes>
     </Router>
   );
