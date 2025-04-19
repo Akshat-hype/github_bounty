@@ -1,25 +1,22 @@
-// src/CreateBounty.jsx
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { db } from './firebase';  // Import Firestore instance
-import { collection, doc, setDoc } from 'firebase/firestore'; // Firestore functions
+import { db } from './firebase';
+import { collection, doc, setDoc } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 
 function CreateBounty() {
   const [repoLink, setRepoLink] = useState('');
-  const [issueId, setIssueId] = useState('');
   const [bountyAmount, setBountyAmount] = useState('');
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Check if user is logged in
     const auth = getAuth();
     const currentUser = auth.currentUser;
     if (currentUser) {
-      setUser(currentUser); // Store user info (UID, etc.)
+      setUser(currentUser);
     } else {
-      navigate('/login'); // Redirect to login if not authenticated
+      navigate('/login');
     }
   }, [navigate]);
 
@@ -27,18 +24,21 @@ function CreateBounty() {
     e.preventDefault();
     if (!user) return;
 
+    // Generate unique issue ID (e.g., issue-168374879837)
+    const generatedIssueId = `issue-${Date.now()}`;
+
     const bountyData = {
       repoLink,
-      issueId,
+      issueId: generatedIssueId,
       bountyAmount,
       timestamp: new Date(),
     };
 
     try {
-      // Reference to user's document
       const userDocRef = doc(db, 'users', user.displayName);
-      // Create a subcollection "bounties" and add bounty
-      await setDoc(doc(collection(userDocRef, 'bounties')), bountyData);
+      const bountyDocRef = doc(userDocRef, 'bounties', generatedIssueId);
+
+      await setDoc(bountyDocRef, bountyData);
 
       console.log('Bounty created and stored:', bountyData);
       navigate('/dashboard');
@@ -64,18 +64,6 @@ function CreateBounty() {
         </div>
 
         <div style={styles.inputGroup}>
-          <label htmlFor="issueId">Issue ID / Title:</label>
-          <input
-            type="text"
-            id="issueId"
-            value={issueId}
-            onChange={(e) => setIssueId(e.target.value)}
-            placeholder="Issue #1234"
-            required
-          />
-        </div>
-
-        <div style={styles.inputGroup}>
           <label htmlFor="bountyAmount">Bounty Amount (in Sepolia ETH):</label>
           <input
             type="number"
@@ -93,7 +81,6 @@ function CreateBounty() {
   );
 }
 
-// Inline styles
 const styles = {
   container: {
     padding: '2rem',
