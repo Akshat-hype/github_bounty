@@ -3,12 +3,159 @@ import { useNavigate } from 'react-router-dom';
 import { db } from './firebase';
 import { collection, doc, setDoc } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
+import Web3 from 'web3';
 
 function CreateBounty() {
   const [repoLink, setRepoLink] = useState('');
   const [bountyAmount, setBountyAmount] = useState('');
   const [user, setUser] = useState(null);
+  const [account, setAccount] = useState('');
   const navigate = useNavigate();
+
+  const contractAddress = '0x71cCed2a69239E6c400c9194AE8C1Ed4c7612BCF'; // 👈 Replace this
+
+  // 👇 Your contract ABI goes here
+  const contractABI = [
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "string",
+          "name": "issueId",
+          "type": "string"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "creator",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "BountyCreated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "string",
+          "name": "issueId",
+          "type": "string"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "contributor",
+          "type": "address"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "BountyReleased",
+      "type": "event"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "issueId",
+          "type": "string"
+        }
+      ],
+      "name": "createBounty",
+      "outputs": [],
+      "stateMutability": "payable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "issueId",
+          "type": "string"
+        },
+        {
+          "internalType": "address payable",
+          "name": "contributor",
+          "type": "address"
+        }
+      ],
+      "name": "releaseBounty",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "name": "bounties",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "creator",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "amount",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bool",
+          "name": "isClaimed",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "issueId",
+          "type": "string"
+        }
+      ],
+      "name": "getBounty",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ];
 
   useEffect(() => {
     const auth = getAuth();
@@ -18,32 +165,59 @@ function CreateBounty() {
     } else {
       navigate('/login');
     }
+
+    const connectWallet = async () => {
+      if (window.ethereum) {
+        try {
+          const web3 = new Web3(window.ethereum);
+          const accounts = await web3.eth.requestAccounts();
+          setAccount(accounts[0]);
+        } catch (error) {
+          console.error('User denied account access');
+        }
+      } else {
+        alert('Please install MetaMask');
+      }
+    };
+
+    connectWallet();
   }, [navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!user) return;
+    if (!user || !account) return;
 
-    // Generate unique issue ID (e.g., issue-168374879837)
+    const web3 = new Web3(window.ethereum);
+    const contract = new web3.eth.Contract(contractABI, contractAddress);
+
     const generatedIssueId = `issue-${Date.now()}`;
-
-    const bountyData = {
-      repoLink,
-      issueId: generatedIssueId,
-      bountyAmount,
-      timestamp: new Date(),
-    };
+    const bountyInWei = web3.utils.toWei(bountyAmount.toString(), 'ether');
 
     try {
+      const tx = await contract.methods.createBounty(generatedIssueId).send({
+        from: account,
+        value: bountyInWei,
+      });
+
+      console.log('Transaction success:', tx);
+
+      const bountyData = {
+        repoLink,
+        issueId: generatedIssueId,
+        bountyAmount,
+        timestamp: new Date(),
+        transactionHash: tx.transactionHash,
+      };
+
       const userDocRef = doc(db, 'users', user.displayName);
       const bountyDocRef = doc(userDocRef, 'bounties', generatedIssueId);
 
       await setDoc(bountyDocRef, bountyData);
 
-      console.log('Bounty created and stored:', bountyData);
       navigate('/dashboard');
     } catch (error) {
-      console.error('Error creating bounty:', error);
+      console.error('Transaction failed:', error);
+      alert('Failed to create bounty on blockchain');
     }
   };
 
@@ -70,7 +244,7 @@ function CreateBounty() {
             id="bountyAmount"
             value={bountyAmount}
             onChange={(e) => setBountyAmount(e.target.value)}
-            placeholder="0.5 ETH"
+            placeholder="0.5"
             required
           />
         </div>
