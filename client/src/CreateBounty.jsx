@@ -12,7 +12,7 @@ function CreateBounty() {
   const [account, setAccount] = useState('');
   const navigate = useNavigate();
 
-  const contractAddress = '0x71cCed2a69239E6c400c9194AE8C1Ed4c7612BCF'; // 👈 Replace this
+  const contractAddress = '0xdad06ff88ad02975d374cf3c869c2ed8069cf48e'; // 👈 Replace this
 
   // 👇 Your contract ABI goes here
   const contractABI = [
@@ -70,37 +70,6 @@ function CreateBounty() {
       "inputs": [
         {
           "internalType": "string",
-          "name": "issueId",
-          "type": "string"
-        }
-      ],
-      "name": "createBounty",
-      "outputs": [],
-      "stateMutability": "payable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "string",
-          "name": "issueId",
-          "type": "string"
-        },
-        {
-          "internalType": "address payable",
-          "name": "contributor",
-          "type": "address"
-        }
-      ],
-      "name": "releaseBounty",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "string",
           "name": "",
           "type": "string"
         }
@@ -134,28 +103,65 @@ function CreateBounty() {
           "type": "string"
         }
       ],
+      "name": "createBounty",
+      "outputs": [],
+      "stateMutability": "payable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "issueId",
+          "type": "string"
+        }
+      ],
       "name": "getBounty",
       "outputs": [
         {
           "internalType": "address",
-          "name": "",
+          "name": "creator",
           "type": "address"
         },
         {
           "internalType": "uint256",
-          "name": "",
+          "name": "amount",
           "type": "uint256"
         },
         {
           "internalType": "bool",
-          "name": "",
+          "name": "isClaimed",
           "type": "bool"
         }
       ],
       "stateMutability": "view",
       "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "string",
+          "name": "issueId",
+          "type": "string"
+        },
+        {
+          "internalType": "address payable",
+          "name": "contributor",
+          "type": "address"
+        }
+      ],
+      "name": "releaseBounty",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "stateMutability": "payable",
+      "type": "receive"
     }
   ];
+
+  
 
   useEffect(() => {
     const auth = getAuth();
